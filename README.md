@@ -39,16 +39,6 @@ A Node.js application for conducting personal and financial verification calls u
 8. **Final Confirmation** - Summary and completion
 
 
-## Installation
-```bash
-# Install dependencies
-npm install openai dotenv chalk
-
-# Configure environment
-cp .env.example .env
-# Add your OPENAI_API_KEY to .env
-
-# Download test data
 # Place applicant_data.json in data/
 ```
 

@@ -1,5 +1,5 @@
 const Anthropic = require('@anthropic-ai/sdk');
-const BaseProvider = require('./BaseProvider');
+const BaseProvider = require('../BaseProvider');
 
 class AnthropicProvider extends BaseProvider {
   constructor(config = {}) {

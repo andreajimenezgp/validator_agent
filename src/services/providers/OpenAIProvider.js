@@ -1,5 +1,5 @@
 const OpenAI = require('openai');
-const BaseProvider = require('./BaseProvider');
+const BaseProvider = require('../BaseProvider');
 
 class OpenAIProvider extends BaseProvider {
   constructor(config = {}) {

@@ -3,6 +3,7 @@ const readline = require('readline');
 const chalk = require('chalk');
 const VerificationAgent = require('./src/agent/VerificationAgent');
 const TestDataLoader = require('./src/utils/TestDataLoader');
+const TestHelper = require('./src/utils/TestHelper');
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -17,15 +18,6 @@ function ask(question) {
 
 async function main() {
   console.log(chalk.blue.bold('\n=== AI Verification Agent - Interactive Test ===\n'));
-  
-  // Check for API key
-  if (!process.env.OPENAI_API_KEY) {
-    console.log(chalk.red('ERROR: OPENAI_API_KEY not found in .env file'));
-    console.log(chalk.yellow('Please add your OpenAI API key to .env file:'));
-    console.log(chalk.gray('OPENAI_API_KEY=sk-your-key-here\n'));
-    rl.close();
-    return;
-  }
   
   // Load test data
   const dataLoader = new TestDataLoader();
@@ -69,6 +61,8 @@ async function main() {
   console.log(chalk.gray('Commands: "exit" to quit | "data" to see collected data | "stage" to see current stage\n'));
   
   const agent = new VerificationAgent(applicant);
+  const llmInfo = agent.getLLMInfo();
+  console.log(chalk.cyan(`\n[LLM] Provider: ${llmInfo.provider}`));
   
   // Start conversation
   let response = agent.start();
@@ -98,9 +92,11 @@ async function main() {
     
     if (input.toLowerCase() === 'stage') {
       const state = agent.getCollectedData();
+      const status = TestHelper.getDataCollectionStatus(state);
       console.log(chalk.cyan(`\n[LOCATION] Current Node: ${state.state.currentNode}`));
       console.log(chalk.cyan(`   Identity Verified: ${state.state.identityVerified}`));
       console.log(chalk.cyan(`   Awaiting: ${state.state.awaitingConfirmation || 'nothing'}`));
+      console.log(chalk.gray(`   Data: Identity=${status.identity.dob && status.identity.ssn ? '✓' : '✗'} Contact=${status.contact.street && status.contact.email ? '✓' : '✗'} Financial=${status.financial.income && status.financial.tenure ? '✓' : '✗'}`));
       continue;
     }
     
@@ -117,8 +113,8 @@ async function main() {
     } catch (error) {
       console.log(chalk.red('\n[ERROR] ') + error.message);
       
-      if (error.message.includes('API key')) {
-        console.log(chalk.yellow('\nCheck your OPENAI_API_KEY in .env file'));
+      if (error.message.includes('API key') || error.message.includes('not provided')) {
+        console.log(chalk.yellow('\nCheck your LLM provider configuration in .env file'));
         break;
       }
       
@@ -143,6 +139,15 @@ async function main() {
     
     console.log(chalk.cyan('\n--- Final Collected Data ---'));
     console.log(chalk.white(JSON.stringify(results.data, null, 2)));
+    
+    if (applicant) {
+      console.log(chalk.cyan('\n--- Data Validation ---'));
+      const validation = TestHelper.validateCollectedData(results.data, applicant);
+      Object.entries(validation).forEach(([field, status]) => {
+        const icon = status.valid ? chalk.green('✓') : chalk.red('✗');
+        console.log(chalk.gray(`  ${icon} ${field}: ${status.message}`));
+      });
+    }
     
     console.log(chalk.cyan(`\n--- Statistics ---`));
     console.log(chalk.cyan(`Total Turns: ${turnCount}`));

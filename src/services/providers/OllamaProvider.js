@@ -1,5 +1,5 @@
 const OpenAI = require('openai');
-const BaseProvider = require('./BaseProvider');
+const BaseProvider = require('../BaseProvider');
 
 class OllamaProvider extends BaseProvider {
   constructor(config = {}) {
@@ -89,10 +89,14 @@ class OllamaProvider extends BaseProvider {
       });
       
       const content = response.choices[0].message.content.trim();
-      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      const jsonMatch = content.match(/\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/);
       
       if (jsonMatch) {
-        return JSON.parse(jsonMatch[0]);
+        try {
+          return JSON.parse(jsonMatch[0]);
+        } catch (parseError) {
+          return null;
+        }
       }
       
       return null;
