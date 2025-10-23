@@ -1,5 +1,5 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
-const BaseProvider = require('./BaseProvider');
+const BaseProvider = require('../BaseProvider');
 
 class GeminiProvider extends BaseProvider {
   constructor(config = {}) {
