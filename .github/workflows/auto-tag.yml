@@ -1,0 +1,60 @@
+name: Auto Tag on Release Commit
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get latest tag
+        id: get_tag
+        run: |
+          git fetch --tags
+          latest_tag=$(git describe --tags `git rev-list --tags --max-count=1` 2>/dev/null || echo "v0.0")
+          echo "latest_tag=$latest_tag" >> $GITHUB_ENV
+
+      - name: Check if commit contains #release
+        id: check_commit
+        run: |
+          if git log -1 --pretty=%B | grep -q "#release"; then
+            echo "should_tag=true" >> $GITHUB_ENV
+          else
+            echo "should_tag=false" >> $GITHUB_ENV
+          fi
+
+      - name: Generate next version
+        if: env.should_tag == 'true'
+        id: next_version
+        run: |
+          old_tag=${{ env.latest_tag }}
+          old_version=$(echo $old_tag | sed 's/v//')
+          IFS='.' read -r major minor patch <<< "$old_version"
+
+          commit_msg=$(git log -1 --pretty=%B)
+
+          if echo "$commit_msg" | grep -iq "#major"; then
+            major=$((major+1)); minor=0; patch=0
+          elif echo "$commit_msg" | grep -iq "#patch"; then
+            patch=$((patch+1))
+          else
+            minor=$((minor+1))
+          fi
+
+          new_tag="v$major.$minor.$patch"
+          echo "new_tag=$new_tag" >> $GITHUB_ENV
+          echo "New tag: $new_tag"
+
+      - name: Create and push tag
+        if: env.should_tag == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "${{ env.new_tag }}" -m "Automated release ${{ env.new_tag }}"
+          git push origin "${{ env.new_tag }}"

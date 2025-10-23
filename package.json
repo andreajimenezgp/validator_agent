@@ -1,0 +1,45 @@
+{  "name": "verification-agent",
+  "version": "1.0.0",
+  "description": "AI Voice Optimized Agent for Personal & Financial Verification",
+  "main": "test-interactive.js",
+  "scripts": {
+    "start": "node test-interactive.js",
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
+  "keywords": [
+    "ai",
+    "verification",
+    "voice-agent",
+    "nodejs",
+    "openai",
+    "financial-verification"
+  ],
+  "author": "",
+  "license": "MIT",
+
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.67.0",
+    "@google/generative-ai": "^0.21.0",
+    "openai": "^4.0.0",
+    "chalk": "^4.1.2",
+    "dotenv": "^16.0.3",
+    "email-validator": "^2.0.4",
+    "emailvalid": "^1.0.4",
+    "express": "^4.18.2",
+    "is-url-superb": "^4.0.0",
+    "readline": "^1.3.0"
+  },
+
+  "devDependencies": {
+    "jest": "^29.7.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "coveragePathIgnorePatterns": ["/node_modules/"],
+    "testMatch": ["**/tests/**/*.test.js"]
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
